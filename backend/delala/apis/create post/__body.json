@@ -1,0 +1,6 @@
+{
+  "$schema": "https://assets.requestly.com/local/v1.11.0/body.json",
+  "contentType": "raw",
+  "raw": "{\n    \"Title\": \"Beautiful 2BR Apartment for Rent\",\n    \"Description\": \"Modern apartment with great view, fully furnished\",\n    \"Price\": 25000,\n    \"Pricetype\": \"monthly\",\n    \"Posttype\": \"rent\",\n    \"ServicetypeId\": 1,\n    \"cityId\": 1,\n    \"subcityId\": 1,\n    \"contactPhone\": \"0911222333\",\n    \"specificLocation\": \"Near Bole Medhanialem Church\"\n}",
+  "rawContentType": "application/json"
+}

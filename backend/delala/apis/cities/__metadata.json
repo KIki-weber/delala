@@ -1,0 +1,10 @@
+{
+  "$schema": "https://assets.requestly.com/local/v1.11.0/metadata.json",
+  "type": "api",
+  "entryType": "http",
+  "id": "21042065-af48-4ee8-b92d-87c0935baa61",
+  "rank": "",
+  "url": "{{baseurl}}/api/cities",
+  "method": "GET",
+  "contentType": "none"
+}
