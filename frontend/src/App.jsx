@@ -20,7 +20,7 @@ import UserProfile from './pages/user/UserProfile';
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsers from './pages/admin/ManageUsers';
-import ManageCities from './pages/admin/manageCities';
+import ManageCities from './pages/admin/ManageCities';
 import ManageSubcities from './pages/admin/ManageSubcities';
 import ManageServiceTypes from './pages/admin/ManageServiceTypes';
 import ManageAllListings from './pages/admin/ManageAllListings';
