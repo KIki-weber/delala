@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ManageAllListings = () => {
@@ -22,16 +22,6 @@ const ManageAllListings = () => {
     useEffect(() => {
         fetchListings();
     }, []);
-
-        try {
-            const response = await api.get('/posts/allpost');
-            setListings(response.data.data);
-        } catch (error) {
-            console.error('Error fetching listings:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleDelete = async (id) => {
         if (window.confirm('Delete this listing?')) {

@@ -1,12 +1,14 @@
-import sequelize  from "./database.js";
+import sequelize from "./database.js";
 
-const checker = async () =>{
-  try{
+const checker = async () => {
+    try {
         await sequelize.authenticate();
-        console.log('database connected');
+        console.log('✅ Database connected successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Database connection error:', error.message);
+        return false;
     }
-    catch(error){
-        console.log('error is happen');
-    }}
-    export default checker;
+};
 
+export default checker;

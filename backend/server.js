@@ -1,7 +1,7 @@
 import express from 'express';
 import sequelize  from './config/database.js';
 import cors from 'cors';
-const PORT = process.env.PORT || 3003;
+
 import checker from './config/databasecomfirm.js';
 import authRoutes from './routes/authrouter.js'
 import postRoutes from './routes/postrouter.js';
@@ -11,6 +11,7 @@ import adminRoutes from './routes/adminrouter.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 const app = express();
+const PORT = process.env.PORT || 3003;
 app.use(cors());
 app.use(express.json());
 
