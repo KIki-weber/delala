@@ -68,7 +68,7 @@ export const login = async (req, res) => {
     if (user && await user.validPassword(password)) {
         res.status(201).json({
             sucess: true,
-            data:{
+            data: {
                 id: user.id,
                 name: user.name,
                 phone: user.phone,
@@ -78,7 +78,9 @@ export const login = async (req, res) => {
                 Role: user.Role,
                 Servicetype: user.Servicetype,
                 isActive: user.isActive
-            }, token: generateToken(user.id)
+                
+            } , token: generateToken(user.id)
+        
         });
     
 } else {

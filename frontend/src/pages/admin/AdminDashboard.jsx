@@ -25,7 +25,8 @@ const AdminDashboard = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-400 via-fuchsia-400 to-orange-400"> 
+            <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
             <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800">Admin Dashboard</h1>
             
             {/* Stats Cards */}

@@ -53,8 +53,9 @@ const ManageServiceTypes = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-400 via-fuchsia-400 to-orange-400"> 
             <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800">Manage Service Types</h1>
+            <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
 
             <form onSubmit={handleAddServiceType} className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <input
@@ -141,6 +142,7 @@ const ManageServiceTypes = () => {
                     </tbody>
                 </table>
             </div>
+        </div>
         </div>
     );
 };

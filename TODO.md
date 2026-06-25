@@ -1,0 +1,4 @@
+- [ ] Update user-page backgrounds to Neon green/volt style
+- [ ] Apply consistent neon green background + card/panel tint across user pages (UserDashboard, MyListings, CreateListing, EditListing, UserProfile)
+- [ ] Ensure Tailwind classes compile and no invalid class names remain
+- [ ] Run frontend build/lint (optional) to verify styling

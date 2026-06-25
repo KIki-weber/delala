@@ -8,11 +8,21 @@ const ManageAllListings = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
+    const fetchListings = async () => {
+        try {
+            const response = await api.get('/posts/allpost');
+            setListings(response.data.data);
+        } catch (error) {
+            console.error('Error fetching listings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchListings();
     }, []);
 
-    const fetchListings = async () => {
         try {
             const response = await api.get('/posts/allpost');
             setListings(response.data.data);
@@ -67,8 +77,9 @@ const ManageAllListings = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-400 via-fuchsia-400 to-orange-400"> 
             {/* Header Section */}
+            <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Manage All Listings</h1>
                 <div className="w-full sm:w-auto">
@@ -179,6 +190,7 @@ const ManageAllListings = () => {
                     </p>
                 </div>
             )}
+        </div>
         </div>
     );
 };

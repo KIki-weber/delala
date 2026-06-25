@@ -83,8 +83,9 @@ const ManageSubcities = () => {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-400 via-fuchsia-400 to-orange-400"> 
             <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800">Manage Subcities</h1>
+            <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
 
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
                 <label className="block text-gray-700 mb-3 font-semibold text-sm sm:text-base">Select City</label>
@@ -166,6 +167,7 @@ const ManageSubcities = () => {
                     </table>
                 </div>
             )}
+        </div>
         </div>
     );
 };
