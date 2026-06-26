@@ -51,37 +51,8 @@ const syncModels = async (force = false) => {
       await sequelize.sync({ force: true });
       console.log('Models synced with force');
     } else {
-      try {
-        await sequelize.sync({ alter: true });
-        console.log('Models synced with alter');
-      } catch (error) {
-        if (String(error.message || '').includes('Duplicate foreign key constraint name')) {
-          console.warn('Foreign key conflict detected. Dropping existing foreign keys and retrying sync.');
-
-          const managedTables = ['Cities', 'Subcities', 'ServiceTypes', 'Users', 'Posts'];
-          const [constraints] = await sequelize.query(
-            `
-              SELECT TABLE_NAME, CONSTRAINT_NAME
-              FROM information_schema.TABLE_CONSTRAINTS
-              WHERE CONSTRAINT_SCHEMA = DATABASE()
-                AND TABLE_NAME IN (:tables)
-                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
-            `,
-            { replacements: { tables: managedTables } }
-          );
-
-          for (const constraint of constraints) {
-            await sequelize.query(
-              `ALTER TABLE \`${constraint.TABLE_NAME}\` DROP FOREIGN KEY \`${constraint.CONSTRAINT_NAME}\`;`
-            );
-          }
-
-          await sequelize.sync({ alter: true });
-          console.log('Models synced after foreign key repair');
-        } else {
-          throw error;
-        }
-      }
+      await sequelize.sync({ alter: true });
+      console.log('Models synced with alter');
     }
   } catch (error) {
     console.error('Model sync failed:', error.message);
