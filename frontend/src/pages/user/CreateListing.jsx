@@ -1,14 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../Services/api';
 import ImageUpload from '../../components/ui/ImageUpload';
 import { useAuth } from '../../context/useAuth';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { useRef } from 'react';
 
 const CreateListing = () => {
     const { user } = useAuth();
-
     const [formData, setFormData] = useState({
         Title: '',
         Description: '',
@@ -33,6 +31,13 @@ const CreateListing = () => {
     const fileInputRef = useRef(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        setFormData((prev) => ({
+            ...prev,
+            contactPhone: user?.phone || prev.contactPhone
+        }));
+    }, [user]);
+
     const fetchData = async () => {
         try {
             const [citiesRes, serviceTypesRes] = await Promise.all([
@@ -49,13 +54,8 @@ const CreateListing = () => {
     };
 
     useEffect(() => {
-        const initialize = async () => {
-            await fetchData();
-        };
-        initialize();
+        fetchData();
     }, []);
-
-    
 
     const fetchSubcities = async (cityId) => {
         if (!cityId) {
@@ -74,11 +74,11 @@ const CreateListing = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        
+        setFormData((prev) => ({ ...prev, [name]: value }));
+
         if (name === 'cityId') {
             fetchSubcities(value);
-            setFormData(prev => ({ ...prev, subcityId: '' }));
+            setFormData((prev) => ({ ...prev, subcityId: '' }));
         }
     };
 
@@ -89,12 +89,12 @@ const CreateListing = () => {
             alert('You can upload up to 4 images.');
             return;
         }
-        setSelectedFiles(prev => [...prev, ...files]);
+        setSelectedFiles((prev) => [...prev, ...files]);
         e.target.value = '';
     };
 
     const removeSelectedFile = (index) => {
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -108,18 +108,19 @@ const CreateListing = () => {
                 const id = response.data.data.id;
                 setPostId(id);
 
-                // If user selected files before creating, upload them now
                 if (selectedFiles.length > 0) {
                     const formDataFiles = new FormData();
-                    selectedFiles.forEach(f => formDataFiles.append('images', f));
+                    selectedFiles.forEach((file) => formDataFiles.append('images', file));
+
                     try {
-                        await api.post(`/posts/${id}/upload-images`, formDataFiles, { headers: { 'Content-Type': 'multipart/form-data' } });
-                    } catch (err) {
-                        console.error('Error uploading images:', err);
+                        await api.post(`/posts/${id}/upload-images`, formDataFiles, {
+                            headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+                    } catch (uploadError) {
+                        console.error('Error uploading images:', uploadError);
                     }
                 }
 
-                // show image manager as fallback and then navigate
                 setShowImageUpload(true);
                 navigate('/user/my-listings');
             }
@@ -133,264 +134,261 @@ const CreateListing = () => {
     if (fetching) return <LoadingSpinner />;
 
     return (
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-2xl">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Create New Listing</h1>
-            
-            {error && <div className="bg-red-100 text-red-700 p-3 sm:p-4 rounded mb-4 text-sm sm:text-base">{error}</div>}
-            
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Title *</label>
-                    <input
-                        type="text"
-                        name="Title"
-                        value={formData.Title}
-                        onChange={handleChange}
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        required
-                    />
+        <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+            <div className="absolute left-[-8rem] top-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+            <div className="absolute right-[-6rem] top-44 h-80 w-80 rounded-full bg-orange-500/20 blur-3xl" />
+            <div className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mb-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+                    <p className="text-xs uppercase tracking-[0.45em] text-orange-300">New Listing</p>
+                    <h1 className="mt-2 text-3xl font-bold text-neon-lime sm:text-4xl">Create New Listing</h1>
+                    <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                        Use bright blue controls and keep your listing consistent with the rest of the user dashboard.
+                    </p>
                 </div>
 
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-3 font-semibold text-sm sm:text-base">📸 Property Photos (Optional, up to 4)</label>
-                    
-                    {/* Upload Area */}
-                    <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="relative border-2 border-dashed border-blue-400 rounded-xl p-6 sm:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 cursor-pointer hover:border-blue-600 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 group"
-                    >
-                        <input 
-                            ref={fileInputRef} 
-                            type="file" 
-                            accept="image/*" 
-                            multiple 
-                            onChange={handleFilesSelected} 
-                            className="hidden"
-                        />
-                        
-                        <div className="flex flex-col items-center justify-center gap-3">
-                            {/* Icon */}
-                            <div className="text-4xl sm:text-5xl group-hover:scale-110 transition-transform duration-300">
-                                📷
-                            </div>
-                            
-                            {/* Text */}
-                            <div className="text-center">
-                                <p className="text-gray-700 font-semibold text-sm sm:text-base">
-                                    Click to upload or drag and drop
-                                </p>
-                                <p className="text-gray-500 text-xs sm:text-sm mt-1">
-                                    PNG, JPG, GIF up to 10MB each
-                                </p>
-                            </div>
-                            
-                            {/* Counter */}
-                            <div className="mt-2 inline-block bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                                {selectedFiles.length}/4 photos
-                            </div>
-                        </div>
+                {error && (
+                    <div className="mb-6 rounded-2xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm text-red-200">
+                        {error}
                     </div>
+                )}
 
-                    {/* Preview Grid */}
-                    {selectedFiles.length > 0 && (
-                        <div className="mt-4 sm:mt-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <p className="text-gray-700 font-semibold text-sm">Selected Photos</p>
-                                <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
-                                    {selectedFiles.length} selected
-                                </span>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {selectedFiles.map((f, idx) => (
-                                    <div key={idx} className="relative group">
-                                        <div className="overflow-hidden rounded-lg border-2 border-gray-200">
-                                            <img 
-                                                src={URL.createObjectURL(f)} 
-                                                alt={f.name} 
-                                                className="w-full h-24 sm:h-28 object-cover group-hover:scale-105 transition-transform duration-300" 
-                                            />
-                                        </div>
-                                        
-                                        {/* Delete Button */}
-                                        <button 
-                                            type="button" 
-                                            onClick={() => removeSelectedFile(idx)} 
-                                            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                                            title="Remove photo"
-                                        >
-                                            ✕
-                                        </button>
-                                        
-                                        {/* File name tooltip */}
-                                        <p className="mt-1 text-xs text-gray-600 truncate group-hover:text-gray-900">
-                                            {f.name}
-                                        </p>
-                                    </div>
-                                ))}
-                                
-                                {/* Add More Button - shown if less than 4 */}
-                                {selectedFiles.length < 4 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="border-2 border-dashed border-blue-300 rounded-lg h-24 sm:h-28 flex items-center justify-center bg-blue-50 hover:bg-blue-100 hover:border-blue-400 transition-all duration-300 cursor-pointer group/add"
-                                    >
-                                        <div className="text-center">
-                                            <div className="text-2xl group-hover/add:scale-125 transition-transform duration-300">+</div>
-                                            <p className="text-xs text-gray-600 mt-1">Add more</p>
-                                        </div>
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Description *</label>
-                    <textarea
-                        name="Description"
-                        value={formData.Description}
-                        onChange={handleChange}
-                        rows="5"
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        required
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Price (ETB) *</label>
-                        <input
-                            type="number"
-                            name="Price"
-                            value={formData.Price}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Price Type</label>
-                        <select
-                            name="Pricetype"
-                            value={formData.Pricetype}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        >
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
-                            <option value="one time">One Time</option>
-                            <option value="negotiable">Negotiable</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Post Type *</label>
-                        <select
-                            name="Posttype"
-                            value={formData.Posttype}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        >
-                            <option value="rent">For Rent</option>
-                            <option value="sell">For Sale</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Service Type *</label>
-                        <select
-                            name="ServiceTypeId"
-                            value={formData.ServiceTypeId}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        >
-                            <option value="">Select</option>
-                            {serviceTypes.map(type => (
-                                <option key={type.id} value={type.id}>{type.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">City *</label>
-                        <select
-                            name="cityId"
-                            value={formData.cityId}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        >
-                            <option value="">Select City</option>
-                            {cities.map(city => (
-                                <option key={city.id} value={city.id}>{city.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Subcity *</label>
-                        <select
-                            name="subcityId"
-                            value={formData.subcityId}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                            disabled={!formData.cityId}
-                        >
-                            <option value="">Select Subcity</option>
-                            {subcities.map(sub => (
-                                <option key={sub.id} value={sub.id}>{sub.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Contact Phone *</label>
-                    <input
-                        type="tel"
-                        name="contactPhone"
-                        value={formData.contactPhone}
-                        onChange={handleChange}
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        required
-                    />
-                </div>
-
-                <div className="mb-6 sm:mb-8">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Specific Location (Optional)</label>
-                    <input
-                        type="text"
-                        name="specificLocation"
-                        value={formData.specificLocation}
-                        onChange={handleChange}
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        placeholder="Near landmark, building name, etc."
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 sm:py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50 font-semibold text-sm sm:text-base transition"
+                <form
+                    onSubmit={handleSubmit}
+                    className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl"
                 >
-                    {loading ? 'Creating...' : 'Create Listing'}
-                </button>
-            </form>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Title</label>
+                            <input
+                                type="text"
+                                name="Title"
+                                value={formData.Title}
+                                onChange={handleChange}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                required
+                            />
+                        </div>
 
-            {showImageUpload && postId && (
-                <div className="mt-6 sm:mt-8 bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                    <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Upload Property Photos (optional)</h3>
-                    <ImageUpload postId={postId} existingImages={[]} onImagesUpdate={() => navigate('/user/my-listings')} />
-                </div>
-            )}
+                        <div>
+                            <label className="mb-3 block text-sm font-semibold text-orange-200">
+                                Property Photos (optional, up to 4)
+                            </label>
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="relative cursor-pointer rounded-[1.5rem] border-2 border-dashed border-orange-400/40 bg-gradient-to-br from-orange-500/10 via-slate-950 to-sky-500/10 p-6 transition hover:border-orange-300 hover:bg-orange-500/15"
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleFilesSelected}
+                                    className="hidden"
+                                />
+
+                                <div className="text-center">
+                                    <p className="text-base font-semibold text-white">Click to upload or drag and drop</p>
+                                    <p className="mt-1 text-xs text-slate-300">PNG, JPG, GIF, or WEBP up to 10MB each</p>
+                                    <div className="mt-4 inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-200">
+                                        {selectedFiles.length}/4 photos
+                                    </div>
+                                </div>
+                            </div>
+
+                            {selectedFiles.length > 0 && (
+                                <div className="mt-5">
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <p className="text-sm font-semibold text-slate-200">Selected Photos</p>
+                                        <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-200">
+                                            {selectedFiles.length} selected
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                                        {selectedFiles.map((file, idx) => (
+                                            <div key={idx} className="group relative">
+                                                <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/70">
+                                                    <img
+                                                        src={URL.createObjectURL(file)}
+                                                        alt={file.name}
+                                                        className="h-24 w-full object-cover transition duration-300 group-hover:scale-105 sm:h-28"
+                                                    />
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeSelectedFile(idx)}
+                                                    className="absolute right-2 top-2 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-red-700"
+                                                >
+                                                    Remove
+                                                </button>
+
+                                                <p className="mt-2 truncate text-xs text-slate-300">{file.name}</p>
+                                            </div>
+                                        ))}
+
+                                        {selectedFiles.length < 4 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-blue-400/30 bg-blue-500/10 text-sm font-semibold text-blue-200 transition hover:border-blue-300 hover:bg-blue-500/20"
+                                            >
+                                                Add more photos
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Description</label>
+                            <textarea
+                                name="Description"
+                                value={formData.Description}
+                                onChange={handleChange}
+                                rows="5"
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Price (ETB)</label>
+                                <input
+                                    type="number"
+                                    name="Price"
+                                    value={formData.Price}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Price Type</label>
+                                <select
+                                    name="Pricetype"
+                                    value={formData.Pricetype}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                >
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                    <option value="one time">One Time</option>
+                                    <option value="negotiable">Negotiable</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Post Type</label>
+                                <select
+                                    name="Posttype"
+                                    value={formData.Posttype}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                >
+                                    <option value="rent">For Rent</option>
+                                    <option value="sell">For Sale</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Service Type</label>
+                                <select
+                                    name="ServiceTypeId"
+                                    value={formData.ServiceTypeId}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                >
+                                    <option value="">Select</option>
+                                    {serviceTypes.map((type) => (
+                                        <option key={type.id} value={type.id}>{type.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">City</label>
+                                <select
+                                    name="cityId"
+                                    value={formData.cityId}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                >
+                                    <option value="">Select City</option>
+                                    {cities.map((city) => (
+                                        <option key={city.id} value={city.id}>{city.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Subcity</label>
+                                <select
+                                    name="subcityId"
+                                    value={formData.subcityId}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 disabled:cursor-not-allowed disabled:opacity-50"
+                                    required
+                                    disabled={!formData.cityId}
+                                >
+                                    <option value="">Select Subcity</option>
+                                    {subcities.map((sub) => (
+                                        <option key={sub.id} value={sub.id}>{sub.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Contact Phone</label>
+                            <input
+                                type="tel"
+                                name="contactPhone"
+                                value={formData.contactPhone}
+                                onChange={handleChange}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Specific Location</label>
+                            <input
+                                type="text"
+                                name="specificLocation"
+                                value={formData.specificLocation}
+                                onChange={handleChange}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                placeholder="Near landmark, building name, etc."
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full rounded-2xl bg-gradient-to-r from-blue-600 via-sky-500 to-blue-500 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {loading ? 'Creating...' : 'Create Listing'}
+                        </button>
+                    </div>
+                </form>
+
+                {showImageUpload && postId && (
+                    <div className="mt-6 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+                        <h3 className="mb-3 text-lg font-semibold text-white">Upload Property Photos</h3>
+                        <p className="mb-4 text-sm text-slate-300">You can add or replace photos after creating the listing.</p>
+                        <ImageUpload postId={postId} existingImages={[]} onImagesUpdate={() => navigate('/user/my-listings')} />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

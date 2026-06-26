@@ -65,7 +65,7 @@ const Register = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        
+
         if (name === 'cityId') {
             fetchSubcities(value);
             setFormData(prev => ({ ...prev, subcityId: '' }));
@@ -74,17 +74,17 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!formData.name || !formData.phone || !formData.password || !formData.ServiceTypeId || !formData.cityId || !formData.subcityId) {
             setError('Please fill in all fields');
             return;
         }
-        
+
         setError('');
         setLoading(true);
-        
+
         const result = await register(formData);
-        
+
         if (result.success) {
             // Navigation will happen automatically via useEffect when user state updates
         } else {
@@ -143,7 +143,7 @@ const Register = () => {
                             onChange={handleChange}
                             autoComplete="new-password"
                             className="w-full p-2 sm:p-3 border border-neon-magenta/30 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-neon-magenta text-xs sm:text-sm md:text-base placeholder-gray-400"
-                            placeholder="••••••"
+                            placeholder="Create a password"
                             required
                         />
                     </div>
@@ -193,8 +193,8 @@ const Register = () => {
                             ))}
                         </select>
                     </div>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
                         className="w-full bg-gradient-to-r from-neon-magenta to-neon-cyan text-gray-900 p-2 sm:p-3 rounded-lg hover:from-neon-cyan hover:to-neon-magenta disabled:opacity-50 transition font-bold text-xs sm:text-sm md:text-base"
                     >

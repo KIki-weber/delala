@@ -6,6 +6,7 @@ import { resolveApiUrl } from '../../utils/apiUrl';
 
 const Home = () => {
     const [listings, setListings] = useState([]);
+    const [posterProfiles, setPosterProfiles] = useState({});
     const [loading, setLoading] = useState(true);
     const [cities, setCities] = useState([]);
     const [serviceTypes, setServiceTypes] = useState([]);
@@ -45,9 +46,9 @@ const Home = () => {
             if (filterValues.ServiceTypeId) params.append('ServiceTypeId', filterValues.ServiceTypeId);
             if (filterValues.minPrice) params.append('minPrice', filterValues.minPrice);
             if (filterValues.maxPrice) params.append('maxPrice', filterValues.maxPrice);
-            
+
             const response = await api.get(`/posts/allpost?${params.toString()}`);
-            
+
             let listingsData = [];
             if (response.data?.data && Array.isArray(response.data.data)) {
                 listingsData = response.data.data;
@@ -56,7 +57,7 @@ const Home = () => {
             } else if (response.data?.listings && Array.isArray(response.data.listings)) {
                 listingsData = response.data.listings;
             }
-            
+
             setListings(listingsData);
         } catch (error) {
             console.error('Error fetching listings:', error);
@@ -80,6 +81,49 @@ const Home = () => {
         };
         initialize();
     }, []);
+
+    useEffect(() => {
+        const fetchPosterProfiles = async () => {
+            const userIds = [...new Set(
+                (Array.isArray(listings) ? listings : [])
+                    .map((listing) => listing.userId)
+                    .filter(Boolean)
+            )];
+
+            const idsToFetch = userIds.filter((userId) => !posterProfiles[userId]);
+            if (idsToFetch.length === 0) return;
+
+            try {
+                const results = await Promise.allSettled(
+                    idsToFetch.map((userId) => api.get(`/users/${userId}`))
+                );
+
+                const nextProfiles = {};
+                results.forEach((result, index) => {
+                    const userId = idsToFetch[index];
+                    if (result.status === 'fulfilled') {
+                        const profile = result.value.data?.data?.user || result.value.data?.data || null;
+                        if (profile) {
+                            nextProfiles[userId] = profile;
+                        }
+                    }
+                });
+
+                if (Object.keys(nextProfiles).length > 0) {
+                    setPosterProfiles((prev) => ({
+                        ...prev,
+                        ...nextProfiles
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching poster profiles:', error);
+            }
+        };
+
+        if (listings.length > 0) {
+            fetchPosterProfiles();
+        }
+    }, [listings, posterProfiles]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -112,50 +156,62 @@ const Home = () => {
     }
 
     const resolveImageUrl = resolveApiUrl;
+    const getListingImage = (listing) => listing.featuredImage || listing.Image?.[0] || null;
+    const getPosterName = (listing) => listing.owner?.name || listing.user?.name || 'Anonymous';
+    const getInitials = (name) => {
+        const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return 'A';
+        return parts.slice(0, 2).map(part => part[0].toUpperCase()).join('');
+    };
 
     return (
         <div className="bg-slate-50 text-slate-900 transition-all duration-500 ease-out">
             <div className="container mx-auto px-4 py-6 md:py-8 lg:py-10">
-                <section className="mb-8 md:mb-10 rounded-2xl md:rounded-3xl lg:rounded-4xl bg-gradient-to-r from-sky-600 to-indigo-600 p-6 md:p-8 lg:p-10 text-white shadow-2xl transition-transform duration-500 hover:-translate-y-1">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">Find your Next Home and Sell Products</h1>
-                    <p className="max-w-3xl text-sm sm:text-base md:text-lg text-slate-100/90 mb-6 md:mb-8">Search listings across cities, subcities, and service categories. Smooth filters, beautiful cards, and an easy way to explore rental and sale listings.</p>
+                <section className="mb-8 rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 p-6 text-white shadow-2xl transition-transform duration-500 hover:-translate-y-1 md:mb-10 md:rounded-3xl md:p-8 lg:rounded-4xl lg:p-10">
+                    <h1 className="mb-3 text-2xl font-bold sm:text-3xl md:mb-4 md:text-4xl lg:text-5xl">
+                        Find your Next Home and Sell Products
+                    </h1>
+                    <p className="mb-6 max-w-3xl text-sm text-slate-100/90 sm:text-base md:mb-8 md:text-lg">
+                        Search listings across cities, subcities, and service categories. Use the filters below to explore rental and sale listings.
+                    </p>
                     <div className="flex flex-wrap gap-3 md:gap-4">
-                        <Link to="/login" className="inline-flex items-center justify-center rounded-lg md:rounded-full bg-white/90 px-4 md:px-6 py-2 md:py-3 text-slate-900 font-semibold shadow-lg hover:bg-white transition text-sm md:text-base">Login</Link>
-                        <Link to="/register" className="inline-flex items-center justify-center rounded-lg md:rounded-full border border-white/30 bg-white/10 px-4 md:px-6 py-2 md:py-3 text-white font-semibold hover:bg-white/20 transition text-sm md:text-base">Register</Link>
+                        <Link to="/login" className="inline-flex items-center justify-center rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg transition hover:bg-white sm:text-base md:rounded-full md:px-6 md:py-3">
+                            Login
+                        </Link>
+                        <Link to="/register" className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20 sm:text-base md:rounded-full md:px-6 md:py-3">
+                            Register
+                        </Link>
                     </div>
                 </section>
 
-                <h2 className="text-3xl font-bold mb-6 md:mb-8">Available Rentals & Properties</h2>
-                
-                {/* Filter Section - RESPONSIVE LAYOUT */}
-                <div className="bg-white p-4 md:p-6 lg:p-8 rounded-2xl md:rounded-3xl mb-8 shadow-lg ring-1 ring-slate-200 transition-all duration-500">
+                <h2 className="mb-6 text-3xl font-bold md:mb-8">Available Rentals & Properties</h2>
+
+                <div className="mb-8 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-slate-200 transition-all duration-500 md:rounded-3xl md:p-6 lg:p-8">
                     <form onSubmit={applyFilters} className="flex flex-col gap-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-4">
                             <input
                                 type="text"
                                 name="search"
                                 placeholder="Search title or description..."
                                 value={filters.search}
                                 onChange={handleFilterChange}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-3 md:text-base"
                             />
-                            
                             <select
                                 name="postType"
                                 value={filters.postType}
                                 onChange={handleFilterChange}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-3 md:text-base"
                             >
                                 <option value="">All Types</option>
                                 <option value="rent">For Rent</option>
                                 <option value="sell">For Sale</option>
                             </select>
-                            
                             <select
                                 name="cityId"
                                 value={filters.cityId}
                                 onChange={handleFilterChange}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-3 md:text-base"
                             >
                                 <option value="">All Cities</option>
                                 {Array.isArray(cities) && cities.map(city => (
@@ -164,13 +220,12 @@ const Home = () => {
                                     </option>
                                 ))}
                             </select>
-
                             <select
                                 name="subcityId"
                                 value={filters.subcityId}
                                 onChange={handleFilterChange}
                                 disabled={!filters.cityId}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 md:p-3 md:text-base"
                             >
                                 <option value="">All Subcities</option>
                                 {Array.isArray(cities) && cities
@@ -182,13 +237,13 @@ const Home = () => {
                                     ))}
                             </select>
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
                             <select
                                 name="ServiceTypeId"
                                 value={filters.ServiceTypeId}
                                 onChange={handleFilterChange}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-3 md:text-base"
                             >
                                 <option value="">All Categories</option>
                                 {Array.isArray(serviceTypes) && serviceTypes.map(type => (
@@ -197,47 +252,44 @@ const Home = () => {
                                     </option>
                                 ))}
                             </select>
-                            
                             <input
                                 type="number"
                                 name="minPrice"
                                 placeholder="Min Price (ETB)"
                                 value={filters.minPrice}
                                 onChange={handleFilterChange}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-3 md:text-base"
                             />
-                            
                             <input
                                 type="number"
                                 name="maxPrice"
                                 placeholder="Max Price (ETB)"
                                 value={filters.maxPrice}
                                 onChange={handleFilterChange}
-                                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
+                                className="rounded-lg border border-gray-300 p-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 md:p-3 md:text-base"
                             />
                         </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                            <button 
-                                type="submit" 
-                                className="bg-blue-600 text-white px-6 md:px-8 py-2 md:py-3 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold shadow-md text-sm md:text-base order-2 sm:order-1"
+
+                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="submit"
+                                className="order-2 rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-md transition duration-200 hover:bg-blue-700 sm:order-1 md:px-8 md:py-3 md:text-base"
                             >
                                 Search
                             </button>
-                            <button 
-                                type="button" 
-                                onClick={resetFilters} 
-                                className="bg-gray-500 text-white px-6 md:px-8 py-2 md:py-3 rounded-lg hover:bg-gray-600 transition duration-200 font-semibold shadow-md text-sm md:text-base order-1 sm:order-2"
+                            <button
+                                type="button"
+                                onClick={resetFilters}
+                                className="order-1 rounded-lg bg-gray-500 px-6 py-2 text-sm font-semibold text-white shadow-md transition duration-200 hover:bg-gray-600 sm:order-2 md:px-8 md:py-3 md:text-base"
                             >
                                 Reset
                             </button>
                         </div>
                     </form>
                 </div>
-                
-                {/* Listings Grid - RESPONSIVE */}
+
                 {Array.isArray(listings) && listings.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
                         {listings
                             .filter(listing => {
                                 const status = listing.Status?.toLowerCase() || 'active';
@@ -247,7 +299,7 @@ const Home = () => {
                                 const getStatusBadge = () => {
                                     const status = listing.Status?.toLowerCase() || 'active';
                                     const postType = listing.Posttype?.toLowerCase();
-                                    
+
                                     if (status === 'inactive') {
                                         return { label: 'INACTIVE', color: 'bg-gray-600', textColor: 'text-white' };
                                     } else if (status === 'sold' || (postType === 'sell' && status === 'closed')) {
@@ -258,94 +310,139 @@ const Home = () => {
                                         return { label: 'ACTIVE', color: 'bg-green-600', textColor: 'text-white' };
                                     }
                                 };
-                                
+
                                 const statusBadge = getStatusBadge();
                                 const isInactive = (listing.Status?.toLowerCase() || 'active') === 'inactive';
+                                const posterProfile = posterProfiles[listing.userId];
+                                const posterPhoto =
+                                    posterProfile?.profilePhoto ||
+                                    posterProfile?.avatar ||
+                                    listing.owner?.profilePhoto ||
+                                    listing.owner?.avatar ||
+                                    listing.user?.profilePhoto ||
+                                    listing.user?.avatar ||
+                                    null;
+                                const posterName = getPosterName(listing);
                                 const whatsappPhone = listing.contactPhone?.replace(/\D/g, '');
                                 const whatsappLink = `https://wa.me/${whatsappPhone}`;
                                 const callLink = `tel:${listing.contactPhone}`;
-                                
+
                                 return (
-                                    <div 
-                                        key={listing.id} 
+                                    <div
+                                        key={listing.id}
                                         onClick={() => window.location.href = `/listing/${listing.id}`}
-                                        className={`border border-gray-200 rounded-xl md:rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 bg-white ${isInactive ? 'opacity-75' : ''} cursor-pointer hover:-translate-y-1`}
+                                        className={`cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:rounded-2xl ${isInactive ? 'opacity-75' : ''}`}
                                     >
-                                        <div className="relative w-full h-40 md:h-48 bg-gray-100 group">
+                                        <div
+                                            className="flex items-center gap-3 border-b border-gray-100 px-3 py-3 md:px-4"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <Link
+                                                to={`/user/${listing.userId}`}
+                                                className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-blue-200 bg-slate-100 text-sm font-bold text-slate-700"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {posterPhoto ? (
+                                                    <img
+                                                        src={resolveImageUrl(posterPhoto)}
+                                                        alt={posterName}
+                                                        className="h-full w-full object-cover"
+                                                        onError={(e) => { e.target.src = '/placeholder-image.jpg'; }}
+                                                    />
+                                                ) : (
+                                                    <span>{getInitials(posterName)}</span>
+                                                )}
+                                            </Link>
+
+                                            <div className="min-w-0 flex-1">
+                                                <Link
+                                                    to={`/user/${listing.userId}`}
+                                                    className="block truncate text-sm font-semibold text-blue-700 transition hover:text-blue-900"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {posterName}
+                                                </Link>
+                                                <p className="truncate text-xs text-gray-500">Posted by</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative w-full bg-gray-100 group">
                                             {(listing.featuredImage || (listing.Image && listing.Image.length > 0)) ? (
-                                                <img
-                                                    src={resolveImageUrl(listing.featuredImage || (listing.Image && listing.Image[0]))}
-                                                    alt={listing.Title}
-                                                    className={`block w-full h-40 md:h-48 object-cover ${isInactive ? 'grayscale' : ''}`}
-                                                    onError={(e) => { e.target.src = '/placeholder-image.jpg'; }}
-                                                />
+                                                <div className="flex items-center justify-center overflow-hidden p-2">
+                                                    <img
+                                                        src={resolveImageUrl(getListingImage(listing))}
+                                                        alt={listing.Title}
+                                                        className={`block w-full max-h-72 object-contain ${isInactive ? 'grayscale' : ''}`}
+                                                        onError={(e) => { e.target.src = '/placeholder-image.jpg'; }}
+                                                    />
+                                                </div>
                                             ) : (
-                                                <div className="w-full h-40 md:h-48 flex items-center justify-center text-gray-400 text-sm md:text-base">No Image</div>
+                                                <div className="flex min-h-56 items-center justify-center py-10 text-sm text-gray-400 md:text-base">
+                                                    No image available
+                                                </div>
                                             )}
-                                            
-                                            <div className={`absolute top-2 md:top-3 right-2 md:right-3 ${statusBadge.color} ${statusBadge.textColor} px-2 md:px-3 py-1 rounded-lg text-xs md:text-sm font-bold shadow-lg border-2 border-white`}>
+
+                                            <div className={`absolute right-2 top-2 rounded-lg border-2 border-white px-2 py-1 text-xs font-bold shadow-lg md:right-3 md:top-3 md:px-3 md:text-sm ${statusBadge.color} ${statusBadge.textColor}`}>
                                                 {statusBadge.label}
                                             </div>
-                                            
+
                                             {isInactive && (
-                                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                                    <div className="bg-gray-800/90 text-white px-3 py-2 rounded-lg text-center">
-                                                        <p className="font-bold text-xs md:text-sm">This listing is INACTIVE</p>
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                                    <div className="rounded-lg bg-gray-800/90 px-3 py-2 text-center text-white">
+                                                        <p className="text-xs font-bold md:text-sm">This listing is INACTIVE</p>
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
-                                        
+
                                         <div className="p-3 md:p-4">
-                                            <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 text-gray-800 line-clamp-2">
+                                            <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-800 md:mb-2 md:text-xl">
                                                 {listing.Title}
                                             </h2>
-                                            <p className="text-gray-600 mb-2 line-clamp-2 text-sm md:text-base">
+                                            <p className="mb-2 line-clamp-2 text-sm text-gray-600 md:text-base">
                                                 {listing.Description?.substring(0, 100)}...
                                             </p>
-                                            <p className="text-xl md:text-2xl font-bold text-blue-600 mb-3 md:mb-4">
+                                            <p className="mb-3 text-xl font-bold text-blue-600 md:mb-4 md:text-2xl">
                                                 ETB {listing.Price?.toLocaleString()}
                                             </p>
-                                            
-                                            <div className="space-y-1 mb-3 md:mb-4 text-xs md:text-sm text-gray-600">
+
+                                            <div className="mb-3 space-y-1 text-xs text-gray-600 md:mb-4 md:text-sm">
                                                 <p>{listing.city?.Name || 'N/A'} {listing.subcity?.Name && `- ${listing.subcity.Name}`}</p>
-                                                <p>{listing.ServiceType?.Name || 'N/A'} • {listing.Posttype === 'rent' ? 'Rent' : 'Sale'}</p>
-                                                <p>{listing.Views || 0} views • Contact: {listing.contactPhone}</p>
+                                                <p>{listing.ServiceType?.Name || 'N/A'} - {listing.Posttype === 'rent' ? 'Rent' : 'Sale'}</p>
+                                                <p>{listing.Views || 0} views - Contact: {listing.contactPhone}</p>
                                             </div>
 
-                                            {/* Seller Info */}
-                                            <div className="mb-3 md:mb-4 p-2 md:p-3 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:border-blue-400 transition"
+                                            <div
+                                                className="mb-3 cursor-pointer rounded-lg border border-blue-200 bg-blue-50 p-2 transition hover:border-blue-400 md:mb-4 md:p-3"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     window.location.href = `/user/${listing.userId}`;
                                                 }}
                                             >
-                                                <p className="text-xs text-gray-600">Seller</p>
-                                                <p className="text-sm md:text-base font-semibold text-blue-600 hover:text-blue-800 transition">
-                                                    {listing.owner?.name || 'Anonymous'} →
+                                                <p className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+                                                    {listing.owner?.name || 'Anonymous'}
                                                 </p>
                                             </div>
 
-                                            {/* Action Buttons */}
                                             <div className="grid grid-cols-3 gap-2">
-                                                <a 
-                                                    href={whatsappLink} 
-                                                    target="_blank" 
+                                                <a
+                                                    href={whatsappLink}
+                                                    target="_blank"
                                                     rel="noopener noreferrer"
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="bg-green-500 text-white px-2 md:px-3 py-1 md:py-2 rounded-lg hover:bg-green-600 transition text-xs md:text-sm font-semibold text-center"
+                                                    className="rounded-lg bg-green-500 px-2 py-1 text-center text-xs font-semibold text-white transition hover:bg-green-600 md:px-3 md:py-2 md:text-sm"
                                                 >
                                                     WhatsApp
                                                 </a>
-                                                <a 
-                                                    href={callLink} 
+                                                <a
+                                                    href={callLink}
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="bg-blue-500 text-white px-2 md:px-3 py-1 md:py-2 rounded-lg hover:bg-blue-600 transition text-xs md:text-sm font-semibold text-center"
+                                                    className="rounded-lg bg-blue-500 px-2 py-1 text-center text-xs font-semibold text-white transition hover:bg-blue-600 md:px-3 md:py-2 md:text-sm"
                                                 >
                                                     Call
                                                 </a>
-                                                <button 
-                                                    className="bg-gray-600 text-white px-2 md:px-3 py-1 md:py-2 rounded-lg hover:bg-gray-700 transition text-xs md:text-sm font-semibold"
+                                                <button
+                                                    className="rounded-lg bg-gray-600 px-2 py-1 text-xs font-semibold text-white transition hover:bg-gray-700 md:px-3 md:py-2 md:text-sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         window.location.href = `/listing/${listing.id}`;
@@ -360,23 +457,24 @@ const Home = () => {
                             })}
                     </div>
                 ) : (
-                    <div className="text-center py-12 md:py-16 bg-gray-50 rounded-lg">
-                        <p className="text-gray-500 text-lg md:text-xl mb-2">No listings found.</p>
-                        <p className="text-gray-400 text-sm md:text-base">Try adjusting your filters or check back later.</p>
+                    <div className="rounded-lg bg-gray-50 py-12 text-center md:py-16">
+                        <p className="mb-2 text-lg text-gray-500 md:text-xl">No listings found.</p>
+                        <p className="text-sm text-gray-400 md:text-base">Try adjusting your filters or check back later.</p>
                     </div>
                 )}
 
-                <section id="about" className="mt-12 md:mt-16 rounded-2xl md:rounded-3xl bg-white p-6 md:p-8 shadow-lg ring-1 ring-slate-200 transition-all duration-500">
-                    <div className="text-center mb-6">
-                        <p className="text-sm uppercase tracking-[0.35em] text-sky-600">About</p>
-                        <h2 className="text-2xl md:text-3xl font-semibold mt-4">Built by Kiki Developer</h2>
+                <section id="about" className="mt-12 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-slate-200 transition-all duration-500 md:mt-16 md:rounded-3xl md:p-8">
+                    <div className="mb-6 text-center">
+                        <h2 className="text-2xl font-semibold md:text-3xl">Built by Kiki Developer</h2>
                     </div>
-                    <p className="mx-auto max-w-3xl text-slate-700 leading-8 text-sm md:text-base">This platform was created to make property search and listing management smooth and intuitive. Browse properties, filter by category or location, and manage your listings with a clean, modern home experience.</p>
+                    <p className="mx-auto max-w-3xl text-sm leading-8 text-slate-700 md:text-base">
+                        Browse properties, filter by category or location, and manage listings with a clean, modern home experience.
+                    </p>
                 </section>
 
-                <footer className="mt-12 md:mt-16 border-t border-slate-200 py-8 text-center text-slate-500">
-                    <p className="mb-4">© {new Date().getFullYear()} Kiki Developer</p>
-                    <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-sm md:text-base">
+                <footer className="mt-12 border-t border-slate-200 py-8 text-center text-slate-500 md:mt-16">
+                    <p className="mb-4">(c) {new Date().getFullYear()} Kiki Developer</p>
+                    <div className="flex flex-wrap items-center justify-center gap-3 text-sm md:gap-4 md:text-base">
                         <Link to="/" className="text-slate-600 hover:text-sky-600">Home</Link>
                         <span className="text-slate-300">|</span>
                         <a href="#about" className="text-slate-600 hover:text-sky-600">About</a>

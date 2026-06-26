@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../Services/api';
 import { useAuth } from '../../context/useAuth';
@@ -29,23 +29,8 @@ const EditListing = () => {
     const [error, setError] = useState('');
     const [postImages, setPostImages] = useState([]);
 
-    const fetchSubcities = async (cityId) => {
-        if (!cityId) {
-            setSubcities([]);
-            return;
-        }
-
-        try {
-            const response = await api.get(`/subcities/${cityId}`);
-            setSubcities(response.data?.data || []);
-        } catch (error) {
-            console.error('Error fetching subcities:', error);
-            setSubcities([]);
-        }
-    };
-
     useEffect(() => {
-        const initialize = async () => {
+        const loadData = async () => {
             try {
                 const [citiesRes, serviceTypesRes] = await Promise.all([
                     api.get('/cities'),
@@ -53,8 +38,8 @@ const EditListing = () => {
                 ]);
                 setCities(citiesRes.data?.data || []);
                 setServiceTypes(serviceTypesRes.data?.data || []);
-            } catch (error) {
-                console.error('Error fetching filters:', error);
+            } catch (loadError) {
+                console.error('Error fetching filters:', loadError);
             }
 
             try {
@@ -81,18 +66,34 @@ const EditListing = () => {
                 setPostImages(data.Image || []);
 
                 if (data.cityId) {
-                    await fetchSubcities(data.cityId);
+                    const responseSubcities = await api.get(`/subcities/${data.cityId}`);
+                    setSubcities(responseSubcities.data?.data || []);
                 }
-            } catch (error) {
-                console.error('Error fetching listing:', error);
+            } catch (loadError) {
+                console.error('Error fetching listing:', loadError);
                 setError('Failed to load listing details');
             } finally {
                 setFetching(false);
             }
         };
 
-        initialize();
+        loadData();
     }, [id, user]);
+
+    const fetchSubcities = async (cityId) => {
+        if (!cityId) {
+            setSubcities([]);
+            return;
+        }
+
+        try {
+            const response = await api.get(`/subcities/${cityId}`);
+            setSubcities(response.data?.data || []);
+        } catch (error) {
+            console.error('Error fetching subcities:', error);
+            setSubcities([]);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -126,172 +127,187 @@ const EditListing = () => {
     if (fetching) return <LoadingSpinner />;
 
     return (
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-2xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-3 sm:gap-0">
-                <h1 className="text-2xl sm:text-3xl font-bold">Edit Listing</h1>
-                <button
-                    type="button"
-                    onClick={() => navigate('/user/my-listings')}
-                    className="w-full sm:w-auto bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm sm:text-base transition"
+        <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+            <div className="absolute left-[-8rem] top-24 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl" />
+            <div className="absolute right-[-6rem] top-44 h-80 w-80 rounded-full bg-orange-500/20 blur-3xl" />
+            <div className="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mb-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+                    <p className="text-xs uppercase tracking-[0.45em] text-orange-300">Edit Listing</p>
+                    <h1 className="mt-2 text-3xl font-bold text-neon-lime sm:text-4xl">Edit Listing</h1>
+                    <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                        Update the listing details, photos, and contact information.
+                    </p>
+                </div>
+
+                {error && (
+                    <div className="mb-6 rounded-2xl border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm text-red-200">
+                        {error}
+                    </div>
+                )}
+
+                <form
+                    onSubmit={handleSubmit}
+                    className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl"
                 >
-                    Cancel
-                </button>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Title</label>
+                            <input
+                                type="text"
+                                name="Title"
+                                value={formData.Title}
+                                onChange={handleChange}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Description</label>
+                            <textarea
+                                name="Description"
+                                value={formData.Description}
+                                onChange={handleChange}
+                                rows="5"
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Price (ETB)</label>
+                                <input
+                                    type="number"
+                                    name="Price"
+                                    value={formData.Price}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Price Type</label>
+                                <select
+                                    name="Pricetype"
+                                    value={formData.Pricetype}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                >
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                    <option value="one time">One Time</option>
+                                    <option value="negotiable">Negotiable</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Post Type</label>
+                                <select
+                                    name="Posttype"
+                                    value={formData.Posttype}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                >
+                                    <option value="rent">For Rent</option>
+                                    <option value="sell">For Sale</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Service Type</label>
+                                <select
+                                    name="ServiceTypeId"
+                                    value={formData.ServiceTypeId}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                >
+                                    <option value="">Select Service Type</option>
+                                    {serviceTypes.map((type) => (
+                                        <option key={type.id} value={type.id}>{type.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">City</label>
+                                <select
+                                    name="cityId"
+                                    value={formData.cityId}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                    required
+                                >
+                                    <option value="">Select City</option>
+                                    {cities.map((city) => (
+                                        <option key={city.id} value={city.id}>{city.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-slate-200">Subcity</label>
+                                <select
+                                    name="subcityId"
+                                    value={formData.subcityId}
+                                    onChange={handleChange}
+                                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 disabled:cursor-not-allowed disabled:opacity-50"
+                                    required
+                                    disabled={!formData.cityId}
+                                >
+                                    <option value="">Select Subcity</option>
+                                    {subcities.map((sub) => (
+                                        <option key={sub.id} value={sub.id}>{sub.Name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Contact Phone</label>
+                            <input
+                                type="tel"
+                                name="contactPhone"
+                                value={formData.contactPhone}
+                                onChange={handleChange}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-slate-200">Specific Location</label>
+                            <input
+                                type="text"
+                                name="specificLocation"
+                                value={formData.specificLocation}
+                                onChange={handleChange}
+                                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white placeholder:text-slate-500 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30"
+                                placeholder="Near landmark, building name, etc."
+                            />
+                        </div>
+
+                        <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/60 p-5">
+                            <h3 className="mb-2 text-lg font-semibold text-white">Manage Property Photos</h3>
+                            <p className="mb-4 text-sm text-slate-300">Update or add photos to your listing, up to 4 images.</p>
+                            <ImageUpload postId={id} existingImages={postImages} onImagesUpdate={(imgs) => setPostImages(imgs)} />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full rounded-2xl bg-gradient-to-r from-blue-600 via-sky-500 to-blue-500 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-cyan-500 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {loading ? 'Updating...' : 'Update Listing'}
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            {error && <div className="bg-red-100 text-red-700 p-3 sm:p-4 rounded mb-4 text-sm sm:text-base">{error}</div>}
-
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Title *</label>
-                    <input
-                        type="text"
-                        name="Title"
-                        value={formData.Title}
-                        onChange={handleChange}
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        required
-                    />
-                </div>
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Description *</label>
-                    <textarea
-                        name="Description"
-                        value={formData.Description}
-                        onChange={handleChange}
-                        rows="5"
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        required
-                    />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Price (ETB) *</label>
-                        <input
-                            type="number"
-                            name="Price"
-                            value={formData.Price}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Price Type</label>
-                        <select
-                            name="Pricetype"
-                            value={formData.Pricetype}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        >
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
-                            <option value="one time">One Time</option>
-                            <option value="negotiable">Negotiable</option>
-                        </select>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Post Type *</label>
-                        <select
-                            name="Posttype"
-                            value={formData.Posttype}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        >
-                            <option value="rent">For Rent</option>
-                            <option value="sell">For Sale</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Service Type *</label>
-                        <select
-                            name="ServiceTypeId"
-                            value={formData.ServiceTypeId}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        >
-                            <option value="">Select Service Type</option>
-                            {serviceTypes.map(type => (
-                                <option key={type.id} value={type.id}>{type.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">City *</label>
-                        <select
-                            name="cityId"
-                            value={formData.cityId}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                        >
-                            <option value="">Select City</option>
-                            {cities.map(city => (
-                                <option key={city.id} value={city.id}>{city.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Subcity *</label>
-                        <select
-                            name="subcityId"
-                            value={formData.subcityId}
-                            onChange={handleChange}
-                            className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                            required
-                            disabled={!formData.cityId}
-                        >
-                            <option value="">Select Subcity</option>
-                            {subcities.map(sub => (
-                                <option key={sub.id} value={sub.id}>{sub.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-                <div className="mb-4 sm:mb-6">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Contact Phone *</label>
-                    <input
-                        type="tel"
-                        name="contactPhone"
-                        value={formData.contactPhone}
-                        onChange={handleChange}
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        required
-                    />
-                </div>
-                <div className="mb-6 sm:mb-8">
-                    <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Specific Location (Optional)</label>
-                    <input
-                        type="text"
-                        name="specificLocation"
-                        value={formData.specificLocation}
-                        onChange={handleChange}
-                        className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        placeholder="Near landmark, building name, etc."
-                    />
-                </div>
-<div className="mt-6 sm:mt-8 bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base flex items-center gap-2">
-                    📸 Manage Property Photos
-                </h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-4">Update or add photos to your listing (up to 4 images)</p>
-                <ImageUpload postId={id} existingImages={postImages} onImagesUpdate={(imgs) => setPostImages(imgs)} />
-            </div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-3 sm:py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50 font-semibold text-sm sm:text-base transition"
-                >
-                    {loading ? 'Updating...' : 'Update Listing'}
-                </button>
-            </form>
-
-            
         </div>
     );
 };

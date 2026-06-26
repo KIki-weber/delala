@@ -11,7 +11,6 @@ const Login = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // If user is already logged in, redirect to dashboard
         if (user) {
             navigate(user.Role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
         }
@@ -23,22 +22,20 @@ const Login = () => {
             setError('Please fill in all fields');
             return;
         }
-        
+
         setError('');
         setLoading(true);
-        
+
         const result = await login(phone, password);
-        
+
         if (result.success) {
             // Navigation will happen automatically via useEffect when user state updates
+        } else if (result.message?.toLowerCase().includes('unauthorized')) {
+            setError('Invalid phone number or password');
         } else {
-            // Display user-friendly error messages
-            if (result.message?.toLowerCase().includes('unauthorized')) {
-                setError('Invalid phone number or password');
-            } else {
-                setError(result.message || 'Login failed. Please try again.');
-            }
+            setError(result.message || 'Login failed. Please try again.');
         }
+
         setLoading(false);
     };
 
@@ -77,19 +74,19 @@ const Login = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             autoComplete="current-password"
                             className="w-full p-2 sm:p-3 border border-neon-cyan/30 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-neon-cyan text-xs sm:text-sm md:text-base placeholder-gray-400"
-                            placeholder="••••••"
+                            placeholder="Enter password"
                             required
                         />
                     </div>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
                         className="w-full bg-gradient-to-r from-neon-cyan to-neon-magenta text-gray-900 p-2 sm:p-3 rounded-lg hover:from-neon-magenta hover:to-neon-cyan disabled:opacity-50 transition font-bold text-xs sm:text-sm md:text-base"
                     >
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
-                
+
                 <p className="mt-6 text-center text-gray-400 text-xs sm:text-sm md:text-base">
                     Don't have an account? <Link to="/register" className="text-neon-cyan font-bold hover:text-neon-magenta transition">Register Now</Link>
                 </p>

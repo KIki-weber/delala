@@ -6,6 +6,15 @@ import { Op } from 'sequelize';
 
 const router = express.Router();
 
+const getUserWithRelations = async (userId) => User.findByPk(userId, {
+    include: [
+        { model: ServiceType, as: 'ServiceType' },
+        { model: City, as: 'city' },
+        { model: Subcity, as: 'subcity' }
+    ],
+    attributes: { exclude: ['password'] }
+});
+
 // Get single user profile with their posts
 router.get('/:userId', async (req, res) => {
     try {
@@ -50,11 +59,11 @@ router.get('/:userId', async (req, res) => {
     }
 });
 
-// Update user profile (profile photo, cover photo, bio)
+// Update user profile (name, phone, bio, profile photo, cover photo)
 router.put('/:userId/profile', protect, uploadSingle, async (req, res) => {
     try {
         const { userId } = req.params;
-        const { bio } = req.body;
+        const { bio, name, phone } = req.body;
         
         // Check if user owns the profile
         if (parseInt(userId) !== req.user.id && req.user.Role !== 'admin') {
@@ -66,8 +75,32 @@ router.put('/:userId/profile', protect, uploadSingle, async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        if (phone && phone !== user.phone) {
+            const existingPhone = await User.findOne({
+                where: {
+                    phone,
+                    id: { [Op.ne]: user.id }
+                }
+            });
+
+            if (existingPhone) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Phone number is already in use'
+                });
+            }
+        }
+
+        if (name !== undefined) {
+            user.name = name;
+        }
+
+        if (phone !== undefined) {
+            user.phone = phone;
+        }
+
         // Update bio if provided
-        if (bio) {
+        if (bio !== undefined) {
             user.bio = bio;
         }
 
@@ -85,10 +118,53 @@ router.put('/:userId/profile', protect, uploadSingle, async (req, res) => {
 
         await user.save();
 
+        const updatedUser = await getUserWithRelations(user.id);
+
         res.json({ 
             success: true, 
             message: 'Profile updated successfully',
-            data: user 
+            data: updatedUser 
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.put('/:userId/password', protect, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { currentPassword, newPassword } = req.body;
+
+        if (parseInt(userId) !== req.user.id && req.user.Role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Current password and new password are required'
+            });
+        }
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await user.validPassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Current password is incorrect'
+            });
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Password updated successfully'
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
