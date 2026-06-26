@@ -1,7 +1,7 @@
 import sequelize from '../config/database.js';
 import City from './city.js';
 import Subcity from './subcity.js';
-import Servicetype from './ServiceType.js';
+import ServiceType from './ServiceType.js';
 import User from './Users.js';
 import Post from './Post.js';
 
@@ -13,13 +13,13 @@ Subcity.belongsTo(City, {foreignKey: 'cityId', as: 'city'});
 
 // service relationship
 
-Servicetype.hasMany(User, {foreignKey: 'ServicetypeId', as: 'Users'});
-User.belongsTo(Servicetype, {foreignKey:'ServicetypeId', as: 'Servicetype'});
+ServiceType.hasMany(User, {foreignKey: 'ServicetypeId', as: 'users'});
+User.belongsTo(ServiceType, {foreignKey:'ServicetypeId', as: 'ServiceType'});
  
 
 // lets create relationship in bn servicetype and post
-Servicetype.hasMany(Post, {foreignKey:'ServicetypeId', as: 'posts'});
-Post.belongsTo(Servicetype, {foreignKey: 'ServicetypeId', as: 'Servicetype'});
+ServiceType.hasMany(Post, {foreignKey:'ServicetypeId', as: 'posts'});
+Post.belongsTo(ServiceType, {foreignKey: 'ServicetypeId', as: 'ServiceType'});
 
 
 //lets create relationship in bn user and city
@@ -63,7 +63,7 @@ Subcity.hasMany(Post, {foreignKey: 'subcityId', as:'posts'});
 sequelize,
   City,
   Subcity,
-  Servicetype,
+  ServiceType,
   User,
   Post, 
   syncModels

@@ -102,10 +102,10 @@ Posttype:{
     type: DataTypes.INTEGER,
     allowNull: false,
     references:{
-        model: 'users',
+        model: 'Users',  // ← Changed from 'users' to 'Users'
         key: 'id'
     }
-  },
+},
   Views:{
     type: DataTypes.INTEGER,
     defaultValue: 0
