@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../services/api';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Icon from '../../components/ui/Icon';
+import { resolveApiUrl } from '../../utils/apiUrl';
 
 const ListingDetail = () => {
     const { id } = useParams();
@@ -31,12 +32,7 @@ const ListingDetail = () => {
 
     const images = listing.Image || [];
 
-    const resolveImageUrl = (img) => {
-        if (!img) return '/placeholder-image.jpg';
-        if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3003${img}`;
-        return img;
-    };
+    const resolveImageUrl = resolveApiUrl;
 
     const handleCallNow = () => {
         if (listing.contactPhone) {

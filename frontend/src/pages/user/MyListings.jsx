@@ -1,30 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { resolveApiUrl } from '../../utils/apiUrl';
 
 const MyListings = () => {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchMyListings = async () => {
-        try {
-            const response = await api.get('/posts/my/posts');
-            setListings(response.data.data);
-        } catch (error) {
-            console.error('Error fetching listings:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-
-    const resolveImageUrl = (img) => {
-        if (!img) return '/placeholder-image.jpg';
-        if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3003${img}`;
-        return img;
-    };
+    const resolveImageUrl = resolveApiUrl;
 
     useEffect(() => {
         const loadMyListings = async () => {
@@ -50,32 +34,6 @@ const MyListings = () => {
                 console.error('Error deleting listing:', error);
                 alert('Failed to delete listing');
             }
-        }
-    };
-
-    const handleDeactivate = async (id) => {
-        if (window.confirm('Deactivate this listing? It will be hidden from search results.')) {
-            try {
-                await api.put(`/posts/${id}/deactivate`);
-                setListings(listings.map(listing => 
-                    listing.id === id ? { ...listing, Status: 'inactive' } : listing
-                ));
-            } catch (error) {
-                console.error('Error deactivating listing:', error);
-                alert('Failed to deactivate listing');
-            }
-        }
-    };
-
-    const handleActivate = async (id) => {
-        try {
-            await api.put(`/posts/${id}/activate`);
-            setListings(listings.map(listing => 
-                listing.id === id ? { ...listing, Status: 'active' } : listing
-            ));
-        } catch (error) {
-            console.error('Error activating listing:', error);
-            alert('Failed to activate listing');
         }
     };
 

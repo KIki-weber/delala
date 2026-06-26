@@ -12,6 +12,16 @@ const Subcity = sequelize.define('Subcity', {
         allowNull:false, 
         unique: true
     },
+    cityId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Cities',
+            key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+    },
     isActive:{
         type: DataTypes.BOOLEAN,
         defaultValue: true

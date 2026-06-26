@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { resolveApiUrl } from '../../utils/apiUrl';
 
 const Home = () => {
     const [listings, setListings] = useState([]);
@@ -110,12 +111,7 @@ const Home = () => {
         return <LoadingSpinner />;
     }
 
-    const resolveImageUrl = (img) => {
-        if (!img) return '/placeholder-image.jpg';
-        if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3003${img}`;
-        return img;
-    };
+    const resolveImageUrl = resolveApiUrl;
 
     return (
         <div className="bg-slate-50 text-slate-900 transition-all duration-500 ease-out">

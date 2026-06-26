@@ -1,17 +1,13 @@
-import React, { useState, useEffect} from 'react';
-import api from '../../services/api';
+import { useState, useEffect } from 'react';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const manageCities = () => {
+const ManageCities = () => {
     const [cities, setCities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newCity, setNewCity] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editingName, setEditingName] = useState('');
-
-    useEffect(() => {
-        fetchCities();
-    }, []);
 
     const fetchCities = async () => {
         try {
@@ -23,6 +19,12 @@ const manageCities = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // Initial load fetch for the admin list.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchCities();
+    }, []);
 
     const handleAddCity = async (e) => {
         e.preventDefault();
@@ -230,4 +232,4 @@ const manageCities = () => {
     );
 };
 
-export default manageCities;
+export default ManageCities;

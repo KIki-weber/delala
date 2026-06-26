@@ -1,4 +1,5 @@
-﻿import axios from 'axios';
+import axios from 'axios';
+import { getApiBaseUrl } from '../utils/apiUrl';
 
 // Set up error interceptor to handle any network issues
 const handleErrorResponse = (error) => {
@@ -9,7 +10,7 @@ const handleErrorResponse = (error) => {
 };
 
 const API = axios.create({
-    baseURL: 'http://localhost:3003/api'
+    baseURL: getApiBaseUrl()
 });
 
 // Add token to every request

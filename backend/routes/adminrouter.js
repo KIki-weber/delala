@@ -140,8 +140,8 @@ router.get('/subcities/:cityId', protect, adminOnly, async (req, res) => {
 
 router.post('/subcities', protect, adminOnly, async (req, res) => {
   try {
-    const { Name, CityId } = req.body;
-    const subcity = await Subcity.create({ Name, cityId: CityId });
+    const { Name, cityId, CityId } = req.body;
+    const subcity = await Subcity.create({ Name, cityId: cityId ?? CityId });
     res.status(201).json({ success: true, data: subcity });
   } catch (error) {
     res.status(500).json({ message: error.message });

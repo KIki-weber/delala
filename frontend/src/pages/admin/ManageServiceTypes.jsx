@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
+import { useState, useEffect } from 'react';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ManageServiceTypes = () => {
@@ -11,10 +11,6 @@ const ManageServiceTypes = () => {
     const [editingName, setEditingName] = useState('');
     const [editingCategory, setEditingCategory] = useState('');
 
-    useEffect(() => {
-        fetchServiceTypes();
-    }, []);
-
     const fetchServiceTypes = async () => {
         try {
             const response = await api.get('/service-types');
@@ -25,6 +21,12 @@ const ManageServiceTypes = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // Initial load fetch for the admin list.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchServiceTypes();
+    }, []);
 
     const handleAddServiceType = async (e) => {
         e.preventDefault();

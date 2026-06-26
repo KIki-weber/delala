@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../../services/api';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { resolveApiUrl } from '../../utils/apiUrl';
 
 const UserDetail = () => {
     const { userId } = useParams();
@@ -10,12 +11,7 @@ const UserDetail = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const resolveImageUrl = (img) => {
-        if (!img) return '/placeholder-image.jpg';
-        if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3003${img}`;
-        return img;
-    };
+    const resolveImageUrl = resolveApiUrl;
 
     useEffect(() => {
         const fetchUserData = async () => {

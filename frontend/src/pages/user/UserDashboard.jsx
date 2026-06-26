@@ -1,16 +1,11 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { resolveApiUrl } from '../../utils/apiUrl';
 
 const UserDashboard = () => {
     const { user } = useAuth();
 
-    const resolveImageUrl = (img) => {
-        if (!img) return '/placeholder-image.jpg';
-        if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3003${img}`;
-        return img;
-    };
+    const resolveImageUrl = resolveApiUrl;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">

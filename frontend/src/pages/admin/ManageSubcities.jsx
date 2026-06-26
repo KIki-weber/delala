@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
+import { useState, useEffect } from 'react';
+import api from '../../Services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ManageSubcities = () => {
@@ -11,10 +11,6 @@ const ManageSubcities = () => {
     const [editingId, setEditingId] = useState(null);
     const [editingName, setEditingName] = useState('');
 
-    useEffect(() => {
-        fetchCities();
-    }, []);
-
     const fetchCities = async () => {
         try {
             const response = await api.get('/cities');
@@ -25,6 +21,12 @@ const ManageSubcities = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // Initial load fetch for the admin list.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchCities();
+    }, []);
 
     const fetchSubcities = async (cityId) => {
         if (!cityId) return;
@@ -51,7 +53,7 @@ const ManageSubcities = () => {
         if (!newSubcity.trim() || !selectedCity) return;
         
         try {
-            await api.post('/admin/subcities', { Name: newSubcity, CityId: selectedCity });
+            await api.post('/admin/subcities', { Name: newSubcity, cityId: selectedCity });
             setNewSubcity('');
             fetchSubcities(selectedCity);
         } catch (error) {

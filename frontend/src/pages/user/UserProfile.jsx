@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../../context/useAuth';
-import api from '../../services/api';
+import api from '../../Services/api';
+import { resolveApiUrl } from '../../utils/apiUrl';
 
 const UserProfile = () => {
     const { user, setUser } = useAuth();
@@ -16,12 +17,7 @@ const UserProfile = () => {
     const profilePhotoRef = useRef(null);
     const coverPhotoRef = useRef(null);
 
-    const resolveImageUrl = (img) => {
-        if (!img) return '/placeholder-image.jpg';
-        if (img.startsWith('http')) return img;
-        if (img.startsWith('/')) return `http://localhost:3003${img}`;
-        return img;
-    };
+    const resolveImageUrl = resolveApiUrl;
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

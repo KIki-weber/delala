@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Button = ({ children, onClick, type = 'button', variant = 'primary', disabled = false, className = '' }) => {
     const variants = {
         primary: 'bg-blue-600 hover:bg-blue-700 text-white',
