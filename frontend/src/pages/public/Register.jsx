@@ -8,7 +8,7 @@ const Register = () => {
         name: '',
         phone: '',
         password: '',
-        ServicetypeId: '',
+        ServiceTypeId: '',
         cityId: '',
         subcityId: ''
     });
@@ -75,7 +75,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!formData.name || !formData.phone || !formData.password || !formData.ServicetypeId || !formData.cityId || !formData.subcityId) {
+        if (!formData.name || !formData.phone || !formData.password || !formData.ServiceTypeId || !formData.cityId || !formData.subcityId) {
             setError('Please fill in all fields');
             return;
         }
@@ -150,8 +150,8 @@ const Register = () => {
                     <div>
                         <label className="block text-neon-magenta mb-2 font-semibold text-xs sm:text-sm md:text-base">Service Type</label>
                         <select
-                            name="ServicetypeId"
-                            value={formData.ServicetypeId}
+                            name="ServiceTypeId"
+                            value={formData.ServiceTypeId}
                             onChange={handleChange}
                             className="w-full p-2 sm:p-3 border border-neon-magenta/30 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-neon-magenta text-xs sm:text-sm md:text-base"
                             required

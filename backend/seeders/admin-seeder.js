@@ -1,6 +1,6 @@
 // seeders/admin-seeder.js
 import bcrypt from 'bcrypt';
-import { sequelize, User, City, Subcity, Servicetype } from '../models/indexs.js';
+import { sequelize, User, City, Subcity, ServiceType } from '../models/indexs.js';
 
 const createAdminUser = async () => {
     try {
@@ -19,9 +19,9 @@ const createAdminUser = async () => {
         }
 
         // Create service type if needed
-        let servicetype = await Servicetype.findOne({ where: { Name: 'Property' } });
-        if (!servicetype) {
-            servicetype = await Servicetype.create({ 
+        let serviceType = await ServiceType.findOne({ where: { Name: 'Property' } });
+        if (!serviceType) {
+            serviceType = await ServiceType.create({ 
                 Name: 'Property', 
                 Category: 'both', 
                 isActive: true 
@@ -45,7 +45,7 @@ const createAdminUser = async () => {
             password: '0911222333',
             Role: 'admin',
             isActive: true,
-            ServicetypeId: servicetype.id,
+            ServiceTypeId: serviceType.id,
             cityId: addisAbaba.id,
             subcityId: bole.id
         });

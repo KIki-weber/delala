@@ -65,7 +65,7 @@ const Login = () => {
                             onChange={(e) => setPhone(e.target.value)}
                             autoComplete="tel"
                             className="w-full p-2 sm:p-3 border border-neon-cyan/30 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-neon-cyan text-xs sm:text-sm md:text-base placeholder-gray-400"
-                            placeholder="0911222333"
+                            placeholder="0901302252"
                             required
                         />
                     </div>

@@ -32,7 +32,7 @@ const User = sequelize.define('User',{
             model: 'Subcities',
             key: 'id'
         }},
-ServicetypeId: {
+ServiceTypeId: {
     type: DataTypes.INTEGER,
     allowNull: false,
    references:{

@@ -15,7 +15,7 @@ const EditListing = () => {
         Price: '',
         Pricetype: 'monthly',
         Posttype: 'rent',
-        ServicetypeId: '',
+        ServiceTypeId: '',
         cityId: '',
         subcityId: '',
         contactPhone: '',
@@ -71,7 +71,7 @@ const EditListing = () => {
                     Price: data.Price || '',
                     Pricetype: data.Pricetype || 'monthly',
                     Posttype: data.Posttype || 'rent',
-                    ServicetypeId: data.ServicetypeId || data.Servicetype?.id || '',
+                    ServiceTypeId: data.ServiceTypeId || data.ServiceType?.id || '',
                     cityId: data.cityId || '',
                     subcityId: data.subcityId || '',
                     contactPhone: data.contactPhone || user?.phone || '',
@@ -207,8 +207,8 @@ const EditListing = () => {
                     <div>
                         <label className="block text-gray-700 mb-2 font-semibold text-sm sm:text-base">Service Type *</label>
                         <select
-                            name="ServicetypeId"
-                            value={formData.ServicetypeId}
+                            name="ServiceTypeId"
+                            value={formData.ServiceTypeId}
                             onChange={handleChange}
                             className="w-full p-3 sm:p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                             required

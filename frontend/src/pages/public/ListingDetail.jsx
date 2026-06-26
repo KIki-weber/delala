@@ -102,7 +102,7 @@ const ListingDetail = () => {
                                         Type
                                     </p>
                                     <p className="text-base sm:text-lg">{listing.Posttype === 'rent' ? '🏠 Rent' : '💰 Sale'}</p>
-                                    <p className="text-xs sm:text-sm text-gray-500">{listing.Servicetype?.Name || listing.Servicetype?.name}</p>
+                                    <p className="text-xs sm:text-sm text-gray-500">{listing.ServiceType?.Name || listing.ServiceType?.name}</p>
                                 </div>
                             </div>
 

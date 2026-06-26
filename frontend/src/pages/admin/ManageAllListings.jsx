@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../Services/api';
+import api from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ManageAllListings = () => {
@@ -8,19 +8,27 @@ const ManageAllListings = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
-    const fetchListings = async () => {
-        try {
-            const response = await api.get('/posts/allpost');
-            setListings(response.data.data);
-        } catch (error) {
-            console.error('Error fetching listings:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchListings();
+        let ignore = false;
+
+        (async () => {
+            try {
+                const response = await api.get('/posts/allpost');
+                if (!ignore) {
+                    setListings(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching listings:', error);
+            } finally {
+                if (!ignore) {
+                    setLoading(false);
+                }
+            }
+        })();
+
+        return () => {
+            ignore = true;
+        };
     }, []);
 
     const handleDelete = async (id) => {

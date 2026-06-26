@@ -2,7 +2,7 @@
 // PURPOSE: Provides public data that doesn't require authentication
 
 import express from 'express';
-import { City, Subcity, Servicetype } from '../models/indexs.js';
+import { City, Subcity, ServiceType } from '../models/indexs.js';
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ router.get('/cities', async (req, res) => {
 // USE: For registration form, post creation, filters
 router.get('/service-types', async (req, res) => {
   try {
-    const serviceTypes = await Servicetype.findAll({ 
+    const serviceTypes = await ServiceType.findAll({ 
       where: { isActive: true } 
     });
     res.json({ success: true, data: serviceTypes });

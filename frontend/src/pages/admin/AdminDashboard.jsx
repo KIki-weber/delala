@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -8,16 +8,12 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        fetchStats();
-    }, []);
-
-    const fetchStats = async () => {
+    async function fetchStats() {
         try {
             setLoading(true);
             setError(null);
             const response = await api.get('/admin/dashboard');
-            
+
             // Check if response has the expected structure
             if (response.data && response.data.success) {
                 setStats(response.data.data);
@@ -30,7 +26,39 @@ const AdminDashboard = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+    useEffect(() => {
+        let active = true;
+
+        (async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await api.get('/admin/dashboard');
+
+                if (!active) return;
+
+                if (response.data && response.data.success) {
+                    setStats(response.data.data);
+                } else {
+                    setError('Invalid response format');
+                }
+            } catch (error) {
+                if (!active) return;
+                console.error('Error fetching stats:', error);
+                setError(error.response?.data?.message || 'Failed to fetch dashboard stats');
+            } finally {
+                if (active) {
+                    setLoading(false);
+                }
+            }
+        })();
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     if (loading) return <LoadingSpinner />;
 

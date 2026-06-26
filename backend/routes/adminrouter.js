@@ -1,5 +1,5 @@
 import express from 'express';
-import { User, Servicetype, City, Subcity, Post } from '../models/indexs.js';
+import { User, ServiceType, City, Subcity, Post } from '../models/indexs.js';
 import { protect, adminOnly } from '../middleware/authmiddleware.js';
 
 const router = express.Router();
@@ -10,7 +10,7 @@ router.get('/users', protect, adminOnly, async (req, res) => {
     const users = await User.findAll({
       attributes: { exclude: ['password'] },
       include: [
-        { model: Servicetype, as: 'Servicetype' },
+        { model: ServiceType, as: 'ServiceType' },
         { model: City, as: 'city' },
         { model: Subcity, as: 'subcity' }
       ]
@@ -177,7 +177,7 @@ router.delete('/subcities/:id', protect, adminOnly, async (req, res) => {
 // Service types CRUD
 router.get('/service-types', protect, adminOnly, async (req, res) => {
   try {
-    const serviceTypes = await Servicetype.findAll();
+    const serviceTypes = await ServiceType.findAll();
     res.json({ success: true, data: serviceTypes });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -187,7 +187,7 @@ router.get('/service-types', protect, adminOnly, async (req, res) => {
 router.post('/service-types', protect, adminOnly, async (req, res) => {
   try {
     const { Name, Category } = req.body;
-    const serviceType = await Servicetype.create({ Name, Category });
+    const serviceType = await ServiceType.create({ Name, Category });
     res.status(201).json({ success: true, data: serviceType });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -198,7 +198,7 @@ router.put('/service-types/:id', protect, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
     const { Name, Category } = req.body;
-    const serviceType = await Servicetype.findByPk(id);
+    const serviceType = await ServiceType.findByPk(id);
     if (!serviceType) return res.status(404).json({ message: 'Service type not found' });
     serviceType.Name = Name;
     serviceType.Category = Category;
@@ -212,7 +212,7 @@ router.put('/service-types/:id', protect, adminOnly, async (req, res) => {
 router.delete('/service-types/:id', protect, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
-    const serviceType = await Servicetype.findByPk(id);
+    const serviceType = await ServiceType.findByPk(id);
     if (!serviceType) return res.status(404).json({ message: 'Service type not found' });
     await serviceType.destroy();
     res.json({ success: true, data: serviceType });

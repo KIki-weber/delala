@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Select = ({ label, name, value, onChange, options, required = false, disabled = false }) => {
     return (
         <div className="mb-4">
@@ -19,7 +17,7 @@ const Select = ({ label, name, value, onChange, options, required = false, disab
                 <option value="">Select {label}</option>
                 {options.map(option => (
                     <option key={option.id} value={option.id}>
-                        {option.name}
+                        {option.name ?? option.Name}
                     </option>
                 ))}
             </select>

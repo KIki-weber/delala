@@ -13,13 +13,13 @@ Subcity.belongsTo(City, {foreignKey: 'cityId', as: 'city'});
 
 // service relationship
 
-ServiceType.hasMany(User, {foreignKey: 'ServicetypeId', as: 'users'});
-User.belongsTo(ServiceType, {foreignKey:'ServicetypeId', as: 'ServiceType'});
+ServiceType.hasMany(User, {foreignKey: 'ServiceTypeId', as: 'users'});
+User.belongsTo(ServiceType, {foreignKey:'ServiceTypeId', as: 'ServiceType'});
  
 
 // lets create relationship in bn servicetype and post
-ServiceType.hasMany(Post, {foreignKey:'ServicetypeId', as: 'posts'});
-Post.belongsTo(ServiceType, {foreignKey: 'ServicetypeId', as: 'ServiceType'});
+ServiceType.hasMany(Post, {foreignKey:'ServiceTypeId', as: 'posts'});
+Post.belongsTo(ServiceType, {foreignKey: 'ServiceTypeId', as: 'ServiceType'});
 
 
 //lets create relationship in bn user and city

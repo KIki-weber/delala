@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../Services/api';
+import api from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const Home = () => {
@@ -13,7 +13,7 @@ const Home = () => {
         postType: '',
         cityId: '',
         subcityId: '',
-        serviceTypeId: '',
+        ServiceTypeId: '',
         minPrice: '',
         maxPrice: ''
     });
@@ -41,9 +41,9 @@ const Home = () => {
             if (filterValues.postType) params.append('postType', filterValues.postType);
             if (filterValues.cityId) params.append('cityId', filterValues.cityId);
             if (filterValues.subcityId) params.append('subcityId', filterValues.subcityId);
-            if (filterValues.serviceTypeId) params.append('ServicetypeId', filterValues.serviceTypeId);
-            if (filterValues.minPrice) params.append('minprice', filterValues.minPrice);
-            if (filterValues.maxPrice) params.append('maxprice', filterValues.maxPrice);
+            if (filterValues.ServiceTypeId) params.append('ServiceTypeId', filterValues.ServiceTypeId);
+            if (filterValues.minPrice) params.append('minPrice', filterValues.minPrice);
+            if (filterValues.maxPrice) params.append('maxPrice', filterValues.maxPrice);
             
             const response = await api.get(`/posts/allpost?${params.toString()}`);
             
@@ -72,7 +72,7 @@ const Home = () => {
                 search: '',
                 postType: '',
                 cityId: '',
-                serviceTypeId: '',
+                ServiceTypeId: '',
                 minPrice: '',
                 maxPrice: ''
             });
@@ -98,7 +98,7 @@ const Home = () => {
             search: '',
             postType: '',
             cityId: '',
-            serviceTypeId: '',
+            ServiceTypeId: '',
             minPrice: '',
             maxPrice: ''
         };
@@ -189,8 +189,8 @@ const Home = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                             <select
-                                name="serviceTypeId"
-                                value={filters.serviceTypeId}
+                                name="ServiceTypeId"
+                                value={filters.ServiceTypeId}
                                 onChange={handleFilterChange}
                                 className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm md:text-base"
                             >
@@ -313,7 +313,7 @@ const Home = () => {
                                             
                                             <div className="space-y-1 mb-3 md:mb-4 text-xs md:text-sm text-gray-600">
                                                 <p>{listing.city?.Name || 'N/A'} {listing.subcity?.Name && `- ${listing.subcity.Name}`}</p>
-                                                <p>{listing.Servicetype?.Name || 'N/A'} • {listing.Posttype === 'rent' ? 'Rent' : 'Sale'}</p>
+                                                <p>{listing.ServiceType?.Name || 'N/A'} • {listing.Posttype === 'rent' ? 'Rent' : 'Sale'}</p>
                                                 <p>{listing.Views || 0} views • Contact: {listing.contactPhone}</p>
                                             </div>
 

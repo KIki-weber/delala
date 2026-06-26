@@ -1,4 +1,3 @@
-import React from 'react';
 import Input from './Input';
 import Select from './Select';
 
@@ -28,8 +27,8 @@ const FilterBar = ({ filters, onFilterChange, onSearch, onReset, cities, service
                     options={cities}
                 />
                 <Select
-                    name="serviceTypeId"
-                    value={filters.serviceTypeId}
+                    name="ServiceTypeId"
+                    value={filters.ServiceTypeId}
                     onChange={onFilterChange}
                     options={serviceTypes}
                 />

@@ -1,5 +1,5 @@
 import express from 'express';
-import { User, Post, City, Subcity, Servicetype } from '../models/indexs.js';
+import { User, Post, City, Subcity, ServiceType } from '../models/indexs.js';
 import { protect } from '../middleware/authmiddleware.js';
 import { uploadSingle } from '../middleware/uploadMiddleware.js';
 import { Op } from 'sequelize';
@@ -30,7 +30,7 @@ router.get('/:userId', async (req, res) => {
                 Status: { [Op.ne]: 'inactive' } // Show all except inactive
             },
             include: [
-                { model: Servicetype, as: 'Servicetype' },
+                { model: ServiceType, as: 'ServiceType' },
                 { model: City, as: 'city' },
                 { model: Subcity, as: 'subcity' }
             ],

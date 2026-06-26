@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../Services/api'; // Fixed: changed from 'services' to 'service'
+import { useState, useEffect } from 'react';
+import api from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ManageUsers = () => {
@@ -8,10 +8,29 @@ const ManageUsers = () => {
     const [search, setSearch] = useState('');
 
     useEffect(() => {
-        fetchUsers();
+        let ignore = false;
+
+        (async () => {
+            try {
+                const response = await api.get('/admin/users');
+                if (!ignore) {
+                    setUsers(response.data.data);
+                }
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            } finally {
+                if (!ignore) {
+                    setLoading(false);
+                }
+            }
+        })();
+
+        return () => {
+            ignore = true;
+        };
     }, []);
 
-    const fetchUsers = async () => {
+    const refreshUsers = async () => {
         try {
             const response = await api.get('/admin/users');
             setUsers(response.data.data);
@@ -25,7 +44,7 @@ const ManageUsers = () => {
     const handleRoleChange = async (userId, newRole) => {
         try {
             await api.put(`/admin/users/${userId}/role`, { Role: newRole });
-            fetchUsers();
+            await refreshUsers();
         } catch (error) {
             console.error('Error updating role:', error);
             alert('Failed to update user role');
@@ -39,7 +58,7 @@ const ManageUsers = () => {
             } else {
                 await api.put(`/admin/users/${userId}/activate`);
             }
-            fetchUsers();
+            await refreshUsers();
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Failed to update user status');
@@ -49,7 +68,7 @@ const ManageUsers = () => {
     const filteredUsers = users.filter(user =>
         user.name?.toLowerCase().includes(search.toLowerCase()) ||
         user.phone?.includes(search) ||
-        (user.Servicetype?.Name && user.Servicetype.Name.toLowerCase().includes(search.toLowerCase())) ||
+        (user.ServiceType?.Name && user.ServiceType.Name.toLowerCase().includes(search.toLowerCase())) ||
         (user.city?.Name && user.city.Name.toLowerCase().includes(search.toLowerCase())) ||
         (user.subcity?.Name && user.subcity.Name.toLowerCase().includes(search.toLowerCase()))
     );
@@ -94,7 +113,7 @@ const ManageUsers = () => {
                                             {user.phone}
                                         </td>
                                         <td className="p-2 sm:p-3 text-xs sm:text-sm hidden md:table-cell">
-                                            {user.Servicetype?.Name || 'N/A'}
+                                            {user.ServiceType?.Name || 'N/A'}
                                         </td>
                                         <td className="p-2 sm:p-3 text-xs sm:text-sm hidden lg:table-cell">
                                             {user.city?.Name || 'N/A'}

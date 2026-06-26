@@ -196,7 +196,7 @@ const UserDetail = () => {
                                             <div className="space-y-1 text-sm text-gray-300">
                                                 <p className="flex items-center gap-1">
                                                     <span>🏷️</span>
-                                                    {post.Servicetype?.Name || 'N/A'}
+                                                    {post.ServiceType?.Name || 'N/A'}
                                                 </p>
                                                 <p className="flex items-center gap-1">
                                                     <span>📍</span>

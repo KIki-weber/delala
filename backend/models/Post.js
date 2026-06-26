@@ -57,7 +57,7 @@ Posttype:{
              model: 'Subcities',
              key: 'id'
          }},
- ServicetypeId: {
+ ServiceTypeId: {
      type: DataTypes.INTEGER,
      allowNull: false,
     references:{

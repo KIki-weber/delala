@@ -1,9 +1,9 @@
 import express from 'express';
-import { gmypost,
-     gallpost,
-    gpostbyid,
-    createpost,
-    updatepost,
+import { getMyPosts,
+     getAllPosts,
+    getPostById,
+    createPost,
+    updatePost,
     deletePost,
     uploadPostImages,
     deletePostImage } from '../controllers/postcontroller.js';
@@ -30,15 +30,15 @@ const handleUploadError = (err, req, res, next) => {
 
     const  router = express.Router();
 
-    router.get('/allpost', gallpost);
-    router.get('/:id', gpostbyid);
+    router.get('/allpost', getAllPosts);
+    router.get('/:id', getPostById);
     // we access these end points when we logged in or registed
-    router.post('/', protect, createpost);
+    router.post('/', protect, createPost);
     // image upload routes with error handling
     router.post('/:id/upload-images', protect, uploadImages, handleUploadError, uploadPostImages);
     router.delete('/:id/delete-image', protect, deletePostImage);
-    router.get('/my/posts', protect, gmypost);
-    router.put('/:id', protect, updatepost);
+    router.get('/my/posts', protect, getMyPosts);
+    router.put('/:id', protect, updatePost);
     // Post status update (flexible endpoint supporting any status)
     router.put('/:id/status', protect, async (req, res) => {
         try {
@@ -73,7 +73,7 @@ const handleUploadError = (err, req, res, next) => {
             const { id } = req.params;
             const post = await Post.findByPk(id);
             if (!post) return res.status(404).json({ message: 'Post not found' });
-            if (post.UserId !== req.user.id && req.user.Role !== 'admin') {
+            if (post.userId !== req.user.id && req.user.Role !== 'admin') {
                 return res.status(403).json({ message: 'Unauthorized' });
             }
             post.Status = 'active';
@@ -88,7 +88,7 @@ const handleUploadError = (err, req, res, next) => {
             const { id } = req.params;
             const post = await Post.findByPk(id);
             if (!post) return res.status(404).json({ message: 'Post not found' });
-            if (post.UserId !== req.user.id && req.user.Role !== 'admin') {
+            if (post.userId !== req.user.id && req.user.Role !== 'admin') {
                 return res.status(403).json({ message: 'Unauthorized' });
             }
             post.Status = 'inactive';
