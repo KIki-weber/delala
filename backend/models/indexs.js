@@ -45,19 +45,25 @@ Subcity.hasMany(Post, {foreignKey: 'subcityId', as:'posts'});
  Post.belongsTo(User, {foreignKey: 'userId', as: 'owner'});
 
 
- const syncModels = async(force = true) => {
-    try{
-
-  
-    await sequelize.sync({force, alter: true});
-    console.log('models are synced ');
-    if(force){
-        console.log('all tables were create');
-
-    }}  
-    catch (error) {
-        console.log('error is happened on model creation');
- }  } ;
+const syncModels = async (force = false) => {
+  try {
+    if (force) {
+      await sequelize.sync({ force: true });
+      console.log('Models synced with force');
+    } else {
+      await sequelize.sync({ alter: true });
+      console.log('Models synced with alter');
+    }
+  } catch (error) {
+    console.error('Model sync failed:', error.message);
+    if (error?.original?.sqlMessage) {
+      console.error('Database error:', error.original.sqlMessage);
+    } else if (error?.original?.message) {
+      console.error('Database error:', error.original.message);
+    }
+    throw error;
+  }
+};
 
  export {
 sequelize,
