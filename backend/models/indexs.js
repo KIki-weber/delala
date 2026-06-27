@@ -65,11 +65,12 @@ const syncModels = async (force = false) => {
   }
 };
 
- export {
+export {
 sequelize,
   City,
   Subcity,
   ServiceType,
+  ServiceType as Servicetype,
   User,
   Post, 
   syncModels
