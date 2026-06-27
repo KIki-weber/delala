@@ -13,7 +13,7 @@ export const getApiBaseUrl = () => {
         return `${window.location.protocol}//${window.location.hostname}:${DEFAULT_API_PORT}/api`;
     }
 
-    return `http://localhost:${DEFAULT_API_PORT}/api`;
+    return `http://177.7.48.70:${DEFAULT_API_PORT}/api`;
 };
 
 export const getApiOrigin = () => {
