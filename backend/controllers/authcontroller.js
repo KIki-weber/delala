@@ -139,6 +139,8 @@ export const getProfile = async (req, res) => {
     }
 };
 
+export const getprofile = getProfile;
+
 export const logout = async (req, res) => {
     try {
         res.status(200).json({

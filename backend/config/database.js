@@ -1,15 +1,21 @@
 import {Sequelize} from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
+const cleanEnv = (value, fallback = undefined) => {
+    if (value === undefined || value === null) return fallback;
+    const trimmed = String(value).trim();
+    return trimmed === '' ? fallback : trimmed;
+};
+
 const sequelize = new Sequelize(
-    process.env.DB_NAME || 'delala',
-    process.env.DB_USER || 'root',
-    process.env.DB_PASS || 'kiflommamo',
+    cleanEnv(process.env.DB_NAME, 'delala'),
+    cleanEnv(process.env.DB_USER, 'roots'),
+    cleanEnv(process.env.DB_PASS, ''),
     {
-        host: process.env.DB_HOST,
+        host: cleanEnv(process.env.DB_HOST, 'localhost'),
         dialect : 'mysql',
         logging: false,
-          port: process.env.DB_PORT
+        port: cleanEnv(process.env.DB_PORT, 3306)
     }
 );
 export default sequelize;
