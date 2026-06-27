@@ -108,7 +108,7 @@ export const login = async (req, res) => {
     }
 };
 
-export const getProfile = async (req, res) => {
+export const getprofile = async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id, {
             include: [
@@ -139,7 +139,6 @@ export const getProfile = async (req, res) => {
     }
 };
 
-export const getprofile = getProfile;
 
 export const logout = async (req, res) => {
     try {
