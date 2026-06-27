@@ -10,7 +10,7 @@ const cleanEnv = (value, fallback = undefined) => {
 const sequelize = new Sequelize(
     cleanEnv(process.env.DB_NAME, 'delala'),
     cleanEnv(process.env.DB_USER, 'roots'),
-    cleanEnv(process.env.DB_PASS, ''),
+    cleanEnv(process.env.DB_PASS),
     {
         host: cleanEnv(process.env.DB_HOST, 'localhost'),
         dialect : 'mysql',

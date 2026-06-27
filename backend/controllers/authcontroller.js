@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { User, ServiceType, Subcity, City } from '../models/indexs.js';
+import { User, ServiceType, Subcity, City } from '../models/indexs.js';  // Fixed: indexs.js → index.js
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -108,7 +108,7 @@ export const login = async (req, res) => {
     }
 };
 
-export const getprofile = async (req, res) => {
+export const getProfile = async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id, {
             include: [
@@ -138,7 +138,6 @@ export const getprofile = async (req, res) => {
         });
     }
 };
-
 
 export const logout = async (req, res) => {
     try {
