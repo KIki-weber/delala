@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../Services/api';
+import api from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { resolveApiUrl } from '../../utils/apiUrl';
 

@@ -1,19 +1,25 @@
 const DEFAULT_API_PORT = '3003';
 
 const normalizeUrl = (value) => value.replace(/\/+$/, '');
+const stripApiSuffix = (value) => value.replace(/\/api\/?$/i, '');
 
 export const getApiBaseUrl = () => {
-    const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+    const configuredBaseUrl = import.meta.env.VITE_API_URL?.trim()
+        || import.meta.env.VITE_API_BASE_URL?.trim();
 
     if (configuredBaseUrl) {
         return normalizeUrl(configuredBaseUrl);
     }
 
     if (typeof window !== 'undefined' && window.location?.hostname) {
-        return `${window.location.protocol}//${window.location.hostname}:${DEFAULT_API_PORT}/api`;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return `http://${window.location.hostname}:${DEFAULT_API_PORT}/api`;
+        }
+
+        return `${stripApiSuffix(window.location.origin)}/api`;
     }
 
-    return `http://177.7.48.70:${DEFAULT_API_PORT}/api`;
+    return 'https://kiki.com.et/api';
 };
 
 export const getApiOrigin = () => {
@@ -22,7 +28,7 @@ export const getApiOrigin = () => {
     try {
         return new URL(baseUrl).origin;
     } catch {
-        return baseUrl.replace(/\/api\/?$/, '');
+        return stripApiSuffix(baseUrl);
     }
 };
 

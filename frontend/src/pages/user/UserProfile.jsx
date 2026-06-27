@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/useAuth';
-import api from '../../Services/api';
+import api from '../../services/api';
 import { resolveApiUrl } from '../../utils/apiUrl';
 
 const emptyPasswordForm = {

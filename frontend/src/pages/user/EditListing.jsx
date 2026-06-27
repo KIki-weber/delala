@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api from '../../Services/api';
+import api from '../../services/api';
 import { useAuth } from '../../context/useAuth';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ImageUpload from '../../components/ui/ImageUpload';

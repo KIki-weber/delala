@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
-import api from '../../Services/api';
+import api from '../../services/api';
 
 const Register = () => {
     const [formData, setFormData] = useState({
