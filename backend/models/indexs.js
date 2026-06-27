@@ -70,7 +70,6 @@ sequelize,
   City,
   Subcity,
   ServiceType,
-  ServiceType as Servicetype,
   User,
   Post, 
   syncModels
